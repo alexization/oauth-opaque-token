@@ -14,7 +14,7 @@ data class ApiResponse<T>(
             return ApiResponse(true, message = message)
         }
 
-        fun fail(message: String): ApiResponse<Unit> {
+        fun <T> fail(message: String): ApiResponse<T> {
             return ApiResponse(false, message = message)
         }
     }
