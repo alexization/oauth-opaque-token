@@ -34,7 +34,7 @@ data class RefreshToken(
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: LocalDateTime? = null
+    var createdAt: LocalDateTime? = null
 ) {
     companion object {
         fun create(

@@ -1,7 +1,9 @@
 package com.example.oauth.controller
 
 import com.example.oauth.dto.ApiResponse
+import com.example.oauth.dto.LoginRequest
 import com.example.oauth.dto.SignUpRequest
+import com.example.oauth.dto.TokenResponse
 import com.example.oauth.dto.UserResponse
 import com.example.oauth.service.AuthService
 import jakarta.validation.Valid
@@ -37,6 +39,25 @@ class AuthController(
             ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.fail(message))
+        }
+    }
+
+    @PostMapping("/login")
+    fun login(
+        @Valid @RequestBody request: LoginRequest
+    ): ResponseEntity<ApiResponse<TokenResponse>> {
+        return try {
+            val tokenResponse = authService.login(request)
+
+            ResponseEntity.ok(ApiResponse.success(tokenResponse))
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.fail(e.message ?: "로그인 실패"))
+        } catch (e: Exception) {
+            ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.fail("서버 오류가 발생했습니다."))
         }
     }
 }
