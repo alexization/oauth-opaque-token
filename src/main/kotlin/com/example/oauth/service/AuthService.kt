@@ -2,6 +2,7 @@ package com.example.oauth.service
 
 import com.example.oauth.domain.User
 import com.example.oauth.dto.SignUpRequest
+import com.example.oauth.repository.OAuthTokenRepository
 import com.example.oauth.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class AuthService(
     private val userRepository: UserRepository,
+    private val oAuthTokenRepository: OAuthTokenRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
     @Transactional
@@ -26,5 +28,18 @@ class AuthService(
         )
 
         return userRepository.save(user)
+    }
+
+    fun validateAccessToken(accessToken: String): User? {
+        /* 1. DB 에서 토큰 조회 */
+        val oauthToken = oAuthTokenRepository.findByAccessToken(accessToken)
+            ?: return null
+
+        /* 2. 만료 확인 */
+        if (oauthToken.isExpired()) {
+            return null
+        }
+
+        return oauthToken.user
     }
 }
