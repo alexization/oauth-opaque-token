@@ -38,7 +38,7 @@ class AuthController(
 
             ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.fail(message))
+                .body(ApiResponse.error(message))
         }
     }
 
@@ -53,11 +53,11 @@ class AuthController(
         } catch (e: IllegalArgumentException) {
             ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.fail(e.message ?: "로그인 실패"))
+                .body(ApiResponse.error(e.message ?: "로그인 실패"))
         } catch (e: Exception) {
             ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.fail("서버 오류가 발생했습니다."))
+                .body(ApiResponse.error("서버 오류가 발생했습니다."))
         }
     }
 }
