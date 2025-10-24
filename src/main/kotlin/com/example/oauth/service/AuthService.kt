@@ -6,9 +6,12 @@ import com.example.oauth.domain.User
 import com.example.oauth.dto.LoginRequest
 import com.example.oauth.dto.SignUpRequest
 import com.example.oauth.dto.TokenResponse
+import com.example.oauth.exception.DuplicateResourceException
+import com.example.oauth.exception.ErrorCode
 import com.example.oauth.repository.OAuthTokenRepository
 import com.example.oauth.repository.RefreshTokenRepository
 import com.example.oauth.repository.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,10 +25,12 @@ class AuthService(
     private val refreshTokenRepository: RefreshTokenRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     @Transactional
     fun signUp(request: SignUpRequest): User {
-        require(!userRepository.existsByEmail(request.email)) {
-            "이미 존재하는 이메일입니다: ${request.email}"
+        if (userRepository.existsByEmail(request.email)) {
+            throw DuplicateResourceException(ErrorCode.DUPLICATE_RESOURCE.message)
         }
 
         val user = User.create(
@@ -34,7 +39,10 @@ class AuthService(
             name = request.name
         )
 
-        return userRepository.save(user)
+        val savedUser = userRepository.save(user)
+        logger.info("새로운 사용자 가입 : ${savedUser.email}")
+
+        return savedUser
     }
 
     @Transactional
