@@ -3,7 +3,6 @@ package com.example.oauth.exception
 import com.example.oauth.dto.ApiResponse
 import com.example.oauth.dto.ErrorResponse
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -12,16 +11,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class GlobalExceptionHandler {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @ExceptionHandler(AuthenticationException::class)
-    fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<ApiResponse<Nothing>> {
-        logger.warn(e.message)
+    @ExceptionHandler(CustomException::class)
+    fun handleCustomException(e: CustomException): ResponseEntity<ApiResponse<Nothing>> {
+        logger.warn("[${e.errorCode.code} ${e.message}]", e)
+
         return ResponseEntity
-            .status(HttpStatus.UNAUTHORIZED)
+            .status(e.errorCode.status)
             .body(
                 ApiResponse.error(
                     ErrorResponse(
                         code = e.errorCode.code,
-                        message = e.message ?: e.errorCode.message
+                        message = e.message
                     )
                 )
             )
