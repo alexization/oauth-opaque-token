@@ -10,6 +10,8 @@ enum class ErrorCode (
     /** 인증 관련 */
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH001", "인증에 실패했습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH002", "유효하지 않는 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH003", "만료된 토큰입니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH004", "이메일 또는 비밀번호가 올바르지 않습니다."),
 
     /** 리소스 관련 */
     DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "RES001", "이미 존재하는 리소스입니다."),

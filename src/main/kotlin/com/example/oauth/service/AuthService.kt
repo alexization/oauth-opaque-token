@@ -6,6 +6,7 @@ import com.example.oauth.domain.User
 import com.example.oauth.dto.LoginRequest
 import com.example.oauth.dto.SignUpRequest
 import com.example.oauth.dto.TokenResponse
+import com.example.oauth.exception.AuthenticationException
 import com.example.oauth.exception.DuplicateResourceException
 import com.example.oauth.exception.ErrorCode
 import com.example.oauth.repository.OAuthTokenRepository
@@ -47,11 +48,11 @@ class AuthService(
 
     @Transactional
     fun login(request: LoginRequest): TokenResponse {
-        val user = userRepository.findByEmail(request.email)
-            ?: throw IllegalArgumentException("사용자를 찾을 수 없습니다.")
+        val user = (userRepository.findByEmail(request.email)
+            ?: throw AuthenticationException(errorCode = ErrorCode.INVALID_CREDENTIALS))
 
-        require(passwordEncoder.matches(request.password, user.password)) {
-            "비밀번호가 일치하지 않습니다."
+        if (!passwordEncoder.matches(request.password, user.password)) {
+            throw AuthenticationException(errorCode = ErrorCode.INVALID_CREDENTIALS)
         }
 
         val accessToken = generateOpaqueToken()
@@ -70,6 +71,8 @@ class AuthService(
             expiresInSeconds = 1209600
         )
         refreshTokenRepository.save(savedRefreshToken)
+
+        logger.info("사용자 로그인 : ${user.email}")
 
         return TokenResponse.of(accessToken, refreshToken, 3600)
     }
