@@ -1,18 +1,17 @@
 package com.example.oauth.config
 
-import com.example.oauth.filter.OpaqueTokenFilter
+import com.example.oauth.security.CustomOpaqueTokenIntrospector
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val opaqueTokenFilter: OpaqueTokenFilter
+    private val opaqueTokenIntrospector: CustomOpaqueTokenIntrospector
 ) {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -33,14 +32,15 @@ class SecurityConfig(
                     .hasRole("ADMIN")
                     .anyRequest().authenticated()
             }
-            .addFilterBefore(
-                opaqueTokenFilter,
-                UsernamePasswordAuthenticationFilter::class.java
-            )
+            .oauth2ResourceServer { oauth2 ->
+                oauth2.opaqueToken { opaque ->
+                    opaque.introspector(opaqueTokenIntrospector)
+                }
+            }
             .exceptionHandling { exceptions ->
                 exceptions
-                    .authenticationEntryPoint { _, response, _ ->
-                        response.sendError(401, "인증이 필요합니다.")
+                    .authenticationEntryPoint { _, response, authException ->
+                        response.sendError(401, "인증이 필요합니다 : ${authException.message}")
                     }
                     .accessDeniedHandler { _, response, _ ->
                         response.sendError(403, "접근 권한이 없습니다.")

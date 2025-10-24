@@ -37,19 +37,6 @@ class AuthService(
         return userRepository.save(user)
     }
 
-    fun validateAccessToken(accessToken: String): User? {
-        /* 1. DB 에서 토큰 조회 */
-        val oauthToken = oAuthTokenRepository.findByAccessToken(accessToken)
-            ?: return null
-
-        /* 2. 만료 확인 */
-        if (oauthToken.isExpired()) {
-            return null
-        }
-
-        return oauthToken.user
-    }
-
     @Transactional
     fun login(request: LoginRequest): TokenResponse {
         val user = userRepository.findByEmail(request.email)
