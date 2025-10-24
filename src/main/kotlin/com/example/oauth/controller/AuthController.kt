@@ -23,41 +23,20 @@ class AuthController(
     fun signUp(
         @Valid @RequestBody request: SignUpRequest
     ): ResponseEntity<ApiResponse<UserResponse>> {
-        return runCatching {
-            val user = authService.signUp(request)
-            val response = UserResponse.from(user)
+        val user = authService.signUp(request)
+        val response = UserResponse.from(user)
 
-            ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response))
-        }.getOrElse { e ->
-            val message = when (e) {
-                is IllegalArgumentException -> e.message ?: "회원가입 실패"
-                else -> "서버 내부 오류가 발생했습니다."
-            }
-
-            ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(message))
-        }
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.success(response))
     }
 
     @PostMapping("/login")
     fun login(
         @Valid @RequestBody request: LoginRequest
     ): ResponseEntity<ApiResponse<TokenResponse>> {
-        return try {
-            val tokenResponse = authService.login(request)
+        val tokenResponse = authService.login(request)
 
-            ResponseEntity.ok(ApiResponse.success(tokenResponse))
-        } catch (e: IllegalArgumentException) {
-            ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error(e.message ?: "로그인 실패"))
-        } catch (e: Exception) {
-            ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("서버 오류가 발생했습니다."))
-        }
+        return ResponseEntity.ok(ApiResponse.success(tokenResponse))
     }
 }
