@@ -55,6 +55,9 @@ class AuthService(
             throw AuthenticationException(errorCode = ErrorCode.INVALID_CREDENTIALS)
         }
 
+        oAuthTokenRepository.deleteAllByUserId(user.id)
+        refreshTokenRepository.deleteAllByUserId(user.id)
+
         val accessToken = generateOpaqueToken()
         val refreshToken = generateOpaqueToken()
 
